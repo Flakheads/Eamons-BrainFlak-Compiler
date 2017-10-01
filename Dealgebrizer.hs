@@ -15,8 +15,11 @@ makeArguments :: (Integral a) => a -> String -> String
 makeArguments x name = "("++concat[name ++ '_':base26 a++":"|a<-[0..x-1]]++"__" ++ name ++ ")" 
 
 destack :: [Integer] -> String -> String
-destack polynomial name = concat [show coefficient ++ "*" ++ name ++ "_" ++ base26 index ++ "+" |(index,coefficient) <- zip [0..] polynomial,coefficient /= 0]
+destack polynomial name = concat ["(" ++ show coefficient ++ "*" ++ name ++ "_" ++ base26 index ++ ")+" |(index,coefficient) <- zip [0..] polynomial,coefficient /= 0]
+
+semidealgebrize :: [Expression] -> String
+semidealgebrize stack = concat["(" ++ destack (onStack e) "left" ++ destack (offStack e) "right" ++ destack (sstack e) "third" ++ "(" ++ show (rawvalue e) ++ ")):"|e<-stack]
 
 dealgebrize :: (([Expression], [Expression], [Expression]), (Integer, Integer, Integer), Bool) -> String -> String
 
-dealgebrize ((left,right,third),(d1,d2,d3),True) name = name ++ " :: ([Integer],[Integer],[Integer]) -> (Integer,Integer) -> ([Integer],[Integer],[Integer])\n" ++ name ++ "(" ++ (makeArguments d1 "left") ++ "," ++ (makeArguments d2 "right") ++ "," ++ (makeArguments d3 "third") ++ ") (_lh,_rh) = (" ++ concat["(" ++ destack (onStack e) "left" ++ show (rawvalue e) ++ "):"|e<-left] ++ "__left,[]:__right,[]:__third)" ++ "\n"
+dealgebrize ((left,right,third),(d1,d2,d3),True) name = name ++ " :: ([Integer],[Integer],[Integer]) -> (Integer,Integer) -> ([Integer],[Integer],[Integer])\n" ++ name ++ "(" ++ (makeArguments d1 "left") ++ "," ++ (makeArguments d2 "right") ++ "," ++ (makeArguments d3 "third") ++ ") (_lh,_rh) = (" ++ semidealgebrize left ++ "__left," ++ semidealgebrize right ++ "__right," ++ semidealgebrize third ++ "__third)" ++ "\n"

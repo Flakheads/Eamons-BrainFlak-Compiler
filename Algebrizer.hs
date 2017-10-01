@@ -50,14 +50,23 @@ newScope sdepth = Expression {
 semiAlgebrize :: String -> ([Expression], [Expression], [Expression]) -> (Integer, Integer, Integer) -> Bool -> (([Expression], [Expression], [Expression]), (Integer, Integer, Integer), Bool)
 semiAlgebrize [] a b s = (a, b, s)
 
-semiAlgebrize x@('{':'}':_) ([], offStack, sstack) (onDepth, offDepth, sdepth) s = semiAlgebrize x ([Expression {
+semiAlgebrize x@('{':'}':_) ([], offStack, sstack) (onDepth, offDepth, sdepth) True = semiAlgebrize x ([Expression {
  rawvalue = 0,
  onStack = ([1..onDepth]>>[0])++[1],
  offStack = [],
  sstack = [],
  lheight = (unheight,unheight),
  rheight = (unheight,unheight)
-}], offStack, sstack) (onDepth+1, offDepth, sdepth) s
+}], offStack, sstack) (onDepth+1, offDepth, sdepth) True
+
+semiAlgebrize x@('{':'}':_) ([], offStack, sstack) (onDepth, offDepth, sdepth) False = semiAlgebrize x ([Expression {
+ rawvalue = 0,
+ onStack = [],
+ offStack = ([1..onDepth]>>[0])++[1],
+ sstack = [],
+ lheight = (unheight,unheight),
+ rheight = (unheight,unheight)
+}], offStack, sstack) (onDepth+1, offDepth, sdepth) False
 
 semiAlgebrize x@(a:b:_) (onStack, offStack, []) (onDepth, offDepth, sdepth) s
  | elem (a:b:[]) ["()","[]","{}"] || a == '>' = semiAlgebrize x (onStack, offStack, [newScope sdepth]) (onDepth, offDepth, sdepth + 1) s

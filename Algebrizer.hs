@@ -1,3 +1,4 @@
+module Algebrizer (semiAlgebrize) where
 import Expression
 
 unheight = Height {heights = 0, difference = 0}
@@ -41,7 +42,7 @@ newScope sdepth = Expression {
  rawvalue = 0,
  onStack = [],
  offStack = [],
- sstack = ([1..sdepth]>>[0]++[1]),
+ sstack = ([1..sdepth]>>[0])++[1],
  lheight = (unheight,unheight),
  rheight = (unheight,unheight)
 }
@@ -51,7 +52,7 @@ semiAlgebrize [] a b s = (a, b, s)
 
 semiAlgebrize x@('{':'}':_) ([], offStack, sstack) (onDepth, offDepth, sdepth) s = semiAlgebrize x ([Expression {
  rawvalue = 0,
- onStack = [1..onDepth]>>[0]++[1],
+ onStack = ([1..onDepth]>>[0])++[1],
  offStack = [],
  sstack = [],
  lheight = (unheight,unheight),
@@ -71,7 +72,7 @@ semiAlgebrize ('(':')':x) (onStack, offStack, (top:rest)) depths s = semiAlgebri
 semiAlgebrize ('[':']':x) (onStack, offStack, (top:rest)) depths@(onDepth, _, _) s = semiAlgebrize x (onStack, offStack, (plus (singleHeight onDepth (toInteger $ length onStack) s) top:rest)) depths s
 semiAlgebrize ('{':'}':x) ((poppand:onStack), offStack, (top:rest)) depths s = semiAlgebrize x (onStack, offStack, (plus poppand top):rest) depths s
 
-semiAlgebrize ('<':'>':x) (onStack, offStack, sstack) depths s = semiAlgebrize x (offStack, onStack, sstack) depths (not s)
+semiAlgebrize ('<':'>':x) (onStack, offStack, sstack) (ldepth, rdepth, sdepth) s = semiAlgebrize x (offStack, onStack, sstack) (rdepth, ldepth, sdepth) (not s)
 
 semiAlgebrize ('(':x) (onStack, offStack, scope) depths s = semiAlgebrize x (onStack, offStack, empty:scope) depths s
 semiAlgebrize ('[':x) (onStack, offStack, scope) depths s = semiAlgebrize x (onStack, offStack, empty:scope) depths s
